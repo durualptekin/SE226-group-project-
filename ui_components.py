@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
+from browser_utils import open_music_link
+from export_logic import export_album
+
 
 class AlbumCoverStudioUI:
 
@@ -170,7 +173,7 @@ class AlbumCoverStudioUI:
         self.canvas.pack(side=tk.LEFT,fill= tk.BOTH, expand=True)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.save_btn= ttk.Button(self.right_frame, text="SAVE ALBUM (JSON+PNG)", style="Accent.TButton", state="disabled")
+        self.save_btn= ttk.Button(self.right_frame, text="SAVE ALBUM (JSON+PNG)", style="Accent.TButton", state="disabled", command=self.on_save_click)
         self.save_btn.pack(side=tk.BOTTOM, fill=tk.X, pady=(10,5),ipady=5)
 
         self.status_label= tk.Label(self.right_frame, text="Ready. Describe your mood to generate an album.",bg=self.bg_color, font=("Helvetica", 10),fg= "gray" , anchor="w")
@@ -178,6 +181,9 @@ class AlbumCoverStudioUI:
 
 
     def update_ui_with_data(self, album_metadata, tracklist):
+
+        self.current_metadata = album_metadata
+        self.current_tracklist = tracklist
 
         self.album_title_label.config(text=album_metadata.get("album_name", "Unknown Album"))
         self.artist_title_label.config(text=album_metadata.get("artist_name", "Unknown Artist" ))
@@ -204,10 +210,17 @@ class AlbumCoverStudioUI:
             tk.Label(info_frame, text=track.get("name", "Unknown Track"),bg=self.bg_color ,fg=self.fg_color, font=("Helvetica", 11, "bold"), anchor="w").pack(fill=tk.X)
             tk.Label(info_frame, text=track.get("artist", "Unknown Artist"),bg=self.bg_color, font=("Helvetica", 9, "bold"),fg="gray",  anchor="w").pack(fill=tk.X)
 
-            listen_btn= ttk.Button(track_row, text="Listen", style="Secondary.TButton")
+            listen_btn= ttk.Button(track_row, text="Listen", style="Secondary.TButton", command = lambda t=track: open_music_link(t.get("url", "https://www.last.fm")))
             listen_btn.pack(side=tk.RIGHT)
 
         self.save_btn.config(state="normal")
+
+    def on_save_click(self):
+        full_album_data = {
+            "album_info": self.current_metadata,
+            "tracks": self.current_tracklist
+        }
+        export_album(full_album_data)
 
 
 if __name__ == "__main__":
