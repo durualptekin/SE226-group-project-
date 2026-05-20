@@ -1,15 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
-
-from browser_utils import open_music_link
-from export_logic import export_album
+import webbrowser
 
 
 class AlbumCoverStudioUI:
 
-    def __init__(self, root):
+    def __init__(self, root, on_generate_callback=None,on_save_callback= None ):
 
         self.root= root
+        self.on_generate_callback= on_generate_callback
+        self.on_save_callback= on_save_callback
         self.root.title("Album Cover Studio")
         self.root.geometry("1100x700")
         self.root.minsize(900,600)
@@ -90,28 +90,31 @@ class AlbumCoverStudioUI:
         selected_era= self.era_var.get()
         selected_track_count= self.track_count_var.get()
 
-        # Bu kısım daha sonra main.py içindeki kontrolcüye bağlanacak. Şimdilik çalıştığını görmek için konsola basıyoruz
-        print("--- Album Generation Triggered ---")
 
-        self.status_label.config(text="Generating mock album... Please wait.")
+        self.status_label.config(text="Processing... Please wait.")
 
-        #TEST İÇİN 
-        mock_metadata= {
+
+        if self.on_generate_callback:
+            self.on_generate_callback(user_mood, selected_genre,selected_era, selected_track_count)
+
+        else:
+
+            print("--- Mock Album Generation Triggered ---")
+
+            mock_metadata= {
             "album_name": "Echoes of the Aegean",
             "artist_name": "The Kordon Wanderers",
             "year": selected_era.replace("s", ""),
             "genre": selected_genre,
             "label": "Izmir Records"
         }
-        mock_tracklist = []
-        for i in range(selected_track_count):
-            mock_tracklist.append({
-                "name": f"Melancholy Track {i+1}",
-                "artist": "Various Indie Artists"
-            })
-
+            
+        mock_tracklist = [{"name": f"Melancholy Track {i+1}", "artist": "Various Indie Artists", "url": "https://www.last.fm"} for i in range(selected_track_count)]
         self.update_ui_with_data(mock_metadata, mock_tracklist)
         self.status_label.config(text="Album generated successfully!")
+
+        
+        
 
 
     """
@@ -173,7 +176,7 @@ class AlbumCoverStudioUI:
         self.canvas.pack(side=tk.LEFT,fill= tk.BOTH, expand=True)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.save_btn= ttk.Button(self.right_frame, text="SAVE ALBUM (JSON+PNG)", style="Accent.TButton", state="disabled", command=self.on_save_click)
+        self.save_btn= ttk.Button(self.right_frame, text="SAVE ALBUM (JSON+PNG)", style="Accent.TButton", state="disabled", command=self.on_save_callback)
         self.save_btn.pack(side=tk.BOTTOM, fill=tk.X, pady=(10,5),ipady=5)
 
         self.status_label= tk.Label(self.right_frame, text="Ready. Describe your mood to generate an album.",bg=self.bg_color, font=("Helvetica", 10),fg= "gray" , anchor="w")
@@ -181,9 +184,6 @@ class AlbumCoverStudioUI:
 
 
     def update_ui_with_data(self, album_metadata, tracklist):
-
-        self.current_metadata = album_metadata
-        self.current_tracklist = tracklist
 
         self.album_title_label.config(text=album_metadata.get("album_name", "Unknown Album"))
         self.artist_title_label.config(text=album_metadata.get("artist_name", "Unknown Artist" ))
@@ -210,17 +210,19 @@ class AlbumCoverStudioUI:
             tk.Label(info_frame, text=track.get("name", "Unknown Track"),bg=self.bg_color ,fg=self.fg_color, font=("Helvetica", 11, "bold"), anchor="w").pack(fill=tk.X)
             tk.Label(info_frame, text=track.get("artist", "Unknown Artist"),bg=self.bg_color, font=("Helvetica", 9, "bold"),fg="gray",  anchor="w").pack(fill=tk.X)
 
-            listen_btn= ttk.Button(track_row, text="Listen", style="Secondary.TButton", command = lambda t=track: open_music_link(t.get("url", "https://www.last.fm")))
+            track_url= track.get("url", "")
+            listen_btn= ttk.Button(track_row, text="Listen", style="Secondary.TButton", command= lambda url=track_url: webbrowser.open(url) if url else None)
             listen_btn.pack(side=tk.RIGHT)
 
         self.save_btn.config(state="normal")
 
-    def on_save_click(self):
-        full_album_data = {
-            "album_info": self.current_metadata,
-            "tracks": self.current_tracklist
-        }
-        export_album(full_album_data)
+
+
+    def update_cover_image(self, photo_image):
+
+        if photo_image:
+            self.cover_label.config(image=photo_image, text="")
+            self.cover_label.image= photo_image
 
 
 if __name__ == "__main__":
