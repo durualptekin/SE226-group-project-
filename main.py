@@ -5,6 +5,7 @@ import time
 from ui_components import AlbumCoverStudioUI
 from export_logic import export_album
 from media_utils import create_placeholder_image, convert_to_tk_image
+from image_engine import generate_cover_image
 # from ai_engine import ... (Commented until ai_engine.py is filled)
 # from music_service import ... (Commented until music_service.py is filled)
 
@@ -13,6 +14,7 @@ class SystemController:
         self.root = root
         
         #  Getting the ip of the buttons by hand when starting UI
+    
         self.ui = AlbumCoverStudioUI(
             root,
             on_generate_callback=self.start_generation_thread,
@@ -22,6 +24,7 @@ class SystemController:
         #  Holding the generated data to be able to use when save button is pressed
         self.current_metadata = None
         self.current_tracklist = None
+        self.current_image = None
 
     def start_generation_thread(self, mood, genre, era, track_count):
         """Making UI not to freeze when pending."""
@@ -44,12 +47,27 @@ class SystemController:
         self.root.after(0, lambda: self.ui.status_label.config(text="Fetching tracks from Last.fm..."))
         time.sleep(2)
         
-        # 3rd step: Image generation
+       # 3rd step: Image generation
         self.root.after(0, lambda: self.ui.status_label.config(text="Generating cover art..."))
-        # 4. printing a fake cover image with the placeholder
-        placeholder_pil = create_placeholder_image(text=f"{genre}\nVibes", background="#333333")
-        tk_image = convert_to_tk_image(placeholder_pil, size=(300, 300))
-        self.root.after(0, lambda: self.ui.update_cover_image(tk_image))
+        
+        try:
+            # fake description for now
+            mock_cover_prompt = "A beautiful sunset over the Aegean sea, melancholic"
+            
+            real_pil_image = generate_cover_image(cover_prompt=mock_cover_prompt, genre=genre)
+            self.current_image = real_pil_image
+            
+            # formatting the image
+            tk_image = convert_to_tk_image(real_pil_image, size=(300, 300))
+            self.root.after(0, lambda: self.ui.update_cover_image(tk_image))
+            
+        except Exception as e:
+            # Placeholder incase network connection is lost
+            print(f"Could not download the image: {e}")
+            placeholder_pil = create_placeholder_image(text="Image\nFailed", background="red")
+            tk_image = convert_to_tk_image(placeholder_pil, size=(300, 300))
+            self.root.after(0, lambda: self.ui.update_cover_image(tk_image))
+        
         time.sleep(1)
 
         # Placeholder fake data 
@@ -78,7 +96,7 @@ class SystemController:
                 "tracks": self.current_tracklist
             }
             
-            export_album(full_data)
+            export_album(full_data, cover_image=self.current_image)
         else:
             print("No album to save.")
 
