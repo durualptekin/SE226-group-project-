@@ -3,7 +3,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
-def export_album(album_data):
+def export_album(album_data, cover_image = None):
     """Makes the user choose an file to save the data."""
     root = tk.Tk()
     root.withdraw()
@@ -15,10 +15,10 @@ def export_album(album_data):
         json_file_path = os.path.join(folder_path, "album_info.json")
         with open(json_file_path, 'w', encoding='utf-8') as f:
             json.dump(album_data, f, indent=4, ensure_ascii=False)
-
-        png_file_path = os.path.join(folder_path, "album_info.png")
-        with open(png_file_path, 'w') as f:
-            f.write("This is a fake image file, NOT FINISHED!!")
+        
+        if cover_image:
+            png_file_path = os.path.join(folder_path, "album_cover.png")
+            cover_image.save(png_file_path, format="PNG")
 
         print(f"Files have been saved to {folder_path}")
     else:
