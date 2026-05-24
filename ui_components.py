@@ -80,42 +80,7 @@ class AlbumCoverStudioUI:
 
         self.generate_btn = ttk.Button(self.left_frame, text="GENERATE ALBUM",style="Accent.TButton" ,command=self.on_generate_click)
         self.generate_btn.pack(fill= tk.X, ipady=8)
-
-
-    
-    def on_generate_click(self):
-
-        user_mood= self.journal_text.get("1.0", tk.END).strip()
-        selected_genre= self.genre_var.get()
-        selected_era= self.era_var.get()
-        selected_track_count= self.track_count_var.get()
-
-
-        self.status_label.config(text="Processing... Please wait.")
-
-
-        if self.on_generate_callback:
-            self.on_generate_callback(user_mood, selected_genre,selected_era, selected_track_count)
-
-        else:
-
-            print("--- Mock Album Generation Triggered ---")
-
-            mock_metadata= {
-            "album_name": "Echoes of the Aegean",
-            "artist_name": "The Kordon Wanderers",
-            "year": selected_era.replace("s", ""),
-            "genre": selected_genre,
-            "label": "Izmir Records"
-        }
-            
-        mock_tracklist = [{"name": f"Melancholy Track {i+1}", "artist": "Various Indie Artists", "url": "https://www.last.fm"} for i in range(selected_track_count)]
-        self.update_ui_with_data(mock_metadata, mock_tracklist)
-        self.status_label.config(text="Album generated successfully!")
-
         
-        
-
     def on_generate_click(self):
 
         user_mood= self.journal_text.get("1.0", tk.END).strip()
