@@ -116,8 +116,6 @@ class AlbumCoverStudioUI:
         
         
 
-
-    """
     def on_generate_click(self):
 
         user_mood= self.journal_text.get("1.0", tk.END).strip()
@@ -125,16 +123,25 @@ class AlbumCoverStudioUI:
         selected_era= self.era_var.get()
         selected_track_count= self.track_count_var.get()
 
+        self.status_label.config(text="Processing... Please wait.")
 
-        # Bu kısım daha sonra main.py içindeki kontrolcüye bağlanacak. Şimdilik çalıştığını görmek için konsola basıyoruz
-        print("--- Album Generation Triggered ---")
-        print(f"Mood:  {user_mood}")
-        print(f"Genre:  {selected_genre}")
-        print(f"Era:  {selected_era}")
-        print(f"Track Count:  {selected_track_count}")
-    """
+        if self.on_generate_callback:
+            self.on_generate_callback(user_mood, selected_genre,selected_era, selected_track_count)
+            return
 
-    
+        print("--- Mock Album Generation Triggered ---")
+
+        mock_metadata= {
+        "album_name": "Echoes of the Aegean",
+        "artist_name": "The Kordon Wanderers",
+        "year": selected_era.replace("s", ""),
+        "genre": selected_genre,
+        "label": "Izmir Records"
+        }
+            
+        mock_tracklist = [{"name": f"Melancholy Track {i+1}", "artist": "Various Indie Artists", "url": "https://www.last.fm"} for i in range(selected_track_count)]
+        self.update_ui_with_data(mock_metadata, mock_tracklist)
+        self.status_label.config(text="Album generated successfully!")
 
 
     def _build_output_section(self):
