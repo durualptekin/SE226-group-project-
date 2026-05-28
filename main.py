@@ -6,7 +6,7 @@ from ui_components import AlbumCoverStudioUI
 from export_logic import export_album
 from media_utils import create_placeholder_image, convert_to_tk_image
 from image_engine import generate_cover_image
-# from ai_engine import ... (Commented until ai_engine.py is filled)
+from ai_engine import GeminiService
 # from music_service import ... (Commented until music_service.py is filled)
 
 class SystemController:
@@ -25,6 +25,7 @@ class SystemController:
         self.current_metadata = None
         self.current_tracklist = None
         self.current_image = None
+        self.ai_service = GeminiService()
 
     def start_generation_thread(self, mood, genre, era, track_count):
         """Making UI not to freeze when pending."""
@@ -41,6 +42,7 @@ class SystemController:
         
         # 1st step: Gemini API (Fake waits for now)
         self.root.after(0, lambda: self.ui.status_label.config(text="Gemini is thinking..."))
+        self.current_metadata = self.ai_service.generate_album_data(mood, genre, era, track_count)
         time.sleep(2) 
         
         # 2nd step: Last.fm API (fake waits for now)
@@ -51,10 +53,8 @@ class SystemController:
         self.root.after(0, lambda: self.ui.status_label.config(text="Generating cover art..."))
         
         try:
-            # fake description for now
-            mock_cover_prompt = "A beautiful sunset over the Aegean sea, melancholic"
-            
-            real_pil_image = generate_cover_image(cover_prompt=mock_cover_prompt, genre=genre)
+            real_cover_prompt = self.current_metadata.get("cover_prompt", "fictional album cover")
+            real_pil_image = generate_cover_image(cover_prompt=real_cover_prompt, genre=genre)
             self.current_image = real_pil_image
             
             # formatting the image
@@ -70,14 +70,7 @@ class SystemController:
         
         time.sleep(1)
 
-        # Placeholder fake data 
-        self.current_metadata = {
-            "album_name": "Ghost Reveries",
-            "artist_name": "Opeth",
-            "year": era.replace("s", ""),
-            "genre": genre,
-            "label": "..."
-        }
+        #Waiting for 3rd persons code so this part is placeholder
         self.current_tracklist = [
             {"name": f"Test song {i+1}", "artist": "Radiohead", "url": "https://www.last.fm"} 
             for i in range(track_count)
