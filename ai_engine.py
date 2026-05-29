@@ -1,4 +1,4 @@
-import os
+import os #is a library that lets your code talk to your computer's operating system.Its to access the API keys and more, safely without typing them directly into the code
 import re
 import json
 from google import genai
