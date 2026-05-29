@@ -1,9 +1,10 @@
 import os
+import re
 import json
 from google import genai
 #i tried with gemini.generative... but new gemini library wants us to do it this way.to talk to the ai
 
-API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDZf03cHpFP3exTR_-nskUwOwUUe82GDdU")
+API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBBU_j_s2Ai8CibrXqM9YSz4V0ULY06GTc")
 #pulling
 
 
@@ -44,7 +45,7 @@ class GeminiService:
         # for the answ
         try:
             # actually sending the huge prompt to the ai and waiting for it to reply
-            response = self.client.models.generate_content(model=self.model_name, contents=prompt)  # generate text from the gemini model using the prompt
+            response = self.model.generate_content(prompt)  # generate text from the gemini model using the prompt
             return self.parse_gemini_response(response.text)
 
         except Exception as e:  # if there is an error during the generation or parsing process, we catch the exception and print it, and return an empty JSON object
@@ -65,8 +66,10 @@ class GeminiService:
 
         if not response_text:
             return default_album
-
-        clean_text = response_text.strip()
+        #Improved parsing logic using regex (Regular Expression)
+        #Gemini sometimes adds extra text like "json" or "" around the data.
+        #It finds those specific "markdown" tags and deletes them instantly, leaving only the clean data we need.
+        clean_text = re.sub(r'```json\s*|```', '', response_text).strip()
 
         # if ai said nothing, just use the backup
         if clean_text.startswith("```"):
