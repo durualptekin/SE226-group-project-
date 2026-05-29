@@ -7,7 +7,7 @@ from export_logic import export_album
 from media_utils import create_placeholder_image, convert_to_tk_image
 from image_engine import generate_cover_image
 from ai_engine import GeminiService
-# from music_service import ... (Commented until music_service.py is filled)
+from track_logic import build_tracklist
 
 class SystemController:
     def __init__(self, root):
@@ -45,9 +45,8 @@ class SystemController:
         self.current_metadata = self.ai_service.generate_album_data(mood, genre, era, track_count)
         time.sleep(2) 
         
-        # 2nd step: Last.fm API (fake waits for now)
+        # 2nd step: Last.fm API
         self.root.after(0, lambda: self.ui.status_label.config(text="Fetching tracks from Last.fm..."))
-        time.sleep(2)
         
        # 3rd step: Image generation
         self.root.after(0, lambda: self.ui.status_label.config(text="Generating cover art..."))
@@ -70,11 +69,15 @@ class SystemController:
         
         time.sleep(1)
 
-        #Waiting for 3rd persons code so this part is placeholder
-        self.current_tracklist = [
-            {"name": f"Test song {i+1}", "artist": "Radiohead", "url": "https://www.last.fm"} 
-            for i in range(track_count)
-        ]
+        # Fetching real tracks from Last.fm using tags from Gemini
+        tags = self.current_metadata.get("lastfm_tags", [])
+        self.current_tracklist = build_tracklist(tags, track_count)
+
+        # Fallback if Last.fm returned nothing
+        if not self.current_tracklist:
+            self.current_tracklist = [
+                {"name": "No tracks found", "artist": "Try different mood/genre", "url": ""}
+            ]
 
         # 4th step: UI update
         self.root.after(0, lambda: self.ui.update_ui_with_data(self.current_metadata, self.current_tracklist))
