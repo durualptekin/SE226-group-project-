@@ -4,7 +4,7 @@ import json
 from google import genai
 #i tried with gemini.generative... but new gemini library wants us to do it this way.to talk to the ai
 
-API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBBU_j_s2Ai8CibrXqM9YSz4V0ULY06GTc")
+API_KEY = os.environ.get("GEMINI_API_KEY", "TESTKEY.....")
 #pulling
 
 
