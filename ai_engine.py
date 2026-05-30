@@ -45,7 +45,7 @@ class GeminiService:
         # for the answ
         try:
             # actually sending the huge prompt to the ai and waiting for it to reply
-            response = self.model.generate_content(prompt)  # generate text from the gemini model using the prompt
+            response = self.client.models.generate_content(model=self.model_name,contents=prompt)  # generate text from the gemini model using the prompt
             return self.parse_gemini_response(response.text)
 
         except Exception as e:  # if there is an error during the generation or parsing process, we catch the exception and print it, and return an empty JSON object
