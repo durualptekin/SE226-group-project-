@@ -7,6 +7,7 @@ class AlbumCoverStudioUI:
 
     def __init__(self, root, on_generate_callback=None,on_save_callback= None ):
 
+        # root and callbacks so main.py can connect to our UI
         self.root= root
         self.on_generate_callback= on_generate_callback
         self.on_save_callback= on_save_callback
@@ -14,6 +15,8 @@ class AlbumCoverStudioUI:
         self.root.geometry("1100x700")
         self.root.minsize(900,600)
 
+
+        # spotify style dark mode colors
         self.bg_color= "#121212"
         self.fg_color= "#FFFFFF"
         self.accent_color= "#1DCD5B"
@@ -21,6 +24,7 @@ class AlbumCoverStudioUI:
         
         self.root.configure(bg=self.bg_color)
 
+        # clam theme
         style= ttk.Style()
         style.theme_use('clam')
 
@@ -37,10 +41,13 @@ class AlbumCoverStudioUI:
         self.main_container.pack(fill= tk.BOTH, expand=True)
 
 
+        # --- LEFT SIDE: INPUTS ---
         self.left_frame =ttk.Frame(self.main_container, width=350)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=20, pady=20)
+        # pack_propagate(False) is important here so the left side doesn't shrink
         self.left_frame.pack_propagate(False)
 
+        # --- RIGHT SIDE: MOCKUP ---
         self.right_frame= ttk.Frame(self.main_container)
         self.right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0,20),pady=20)
 
@@ -51,14 +58,17 @@ class AlbumCoverStudioUI:
 
     def _build_input_section(self):
 
+        # AGP1: journal text area
         ttk.Label(self.left_frame, text="Your Mood (English or Turkish): ", font=("Helvetica",10, "bold")).pack(anchor="w", pady=(0,5)) 
 
         self.journal_text= tk.Text(self.left_frame, height=8, wrap=tk.WORD, font=("Helvetica", 10), relief="flat", highlightthickness=1, bg=self.secondary_bg,fg=self.fg_color, insertbackground="white")
         self.journal_text.pack(fill=tk.X, pady=(0,15))
 
+        # putting a default text to save time while testing the app
         default_mood= "I was looking at the sea in Izmir. It was raining softly, and an old song was playing through my headphones. I felt both peaceful and melancholic..."
         self.journal_text.insert(tk.END,default_mood)
 
+        # AGP2: genre
         ttk.Label(self.left_frame, text="Genre: ", font=("Helvetica", 10, "bold")).pack(anchor="w")
         self.genre_var= tk.StringVar()
         self.genre_combo= ttk.Combobox(self.left_frame, textvariable=self.genre_var, state="readonly")
@@ -66,6 +76,7 @@ class AlbumCoverStudioUI:
         self.genre_combo.set("Indie")
         self.genre_combo.pack(fill=tk.X, pady=(0,15))
 
+        # AGP3: era
         ttk.Label(self.left_frame, text="Era: ", font=("Helvetica", 10, "bold")).pack(anchor="w")
         self.era_var= tk.StringVar()
         self.era_combo= ttk.Combobox(self.left_frame, textvariable=self.era_var, state="readonly")
@@ -73,6 +84,7 @@ class AlbumCoverStudioUI:
         self.era_combo.set("2000s")
         self.era_combo.pack(fill= tk.X, pady=(0,15))
 
+        # AGP4: track count
         ttk.Label(self.left_frame, text="Track count: ", font=("Helvetica", 10, "bold")).pack(anchor="w")
         self.track_count_var= tk.IntVar(value=10)
         self.track_spinbox= ttk.Spinbox(self.left_frame, from_=6, to=14 , textvariable=self.track_count_var, state="readonly")
@@ -83,6 +95,7 @@ class AlbumCoverStudioUI:
         
     def on_generate_click(self):
 
+        # get all values from the UI
         user_mood= self.journal_text.get("1.0", tk.END).strip()
         selected_genre= self.genre_var.get()
         selected_era= self.era_var.get()
@@ -90,10 +103,12 @@ class AlbumCoverStudioUI:
 
         self.status_label.config(text="Processing... Please wait.")
 
+        # if main.py is running, send the data there
         if self.on_generate_callback:
             self.on_generate_callback(user_mood, selected_genre,selected_era, selected_track_count)
             return
 
+        # fallback: just for testing the UI if api isn't connected yet
         print("--- Mock Album Generation Triggered ---")
 
         mock_metadata= {
@@ -111,11 +126,13 @@ class AlbumCoverStudioUI:
 
     def _build_output_section(self):
 
+        # top part for cover and texts
         self.header_frame= ttk.Frame(self.right_frame)
         self.header_frame.pack(fill= tk.X, pady=(0,20))
 
-        self.cover_label= tk.Label(self.header_frame, text="Album Cover\n(Loading...)", bg= "#333333", fg= "white", width=25, height=12) 
-        self.cover_label.pack(side=tk.LEFT, padx=(0,20))
+        # empty placeholder for the image at start
+        self.cover_label= tk.Label(self.header_frame, text="Album Cover\n(Loading...)", bg= "#333333", fg= "white") 
+        self.cover_label.pack(side=tk.LEFT, padx=(0,20), pady=10)
 
         self.meta_frame= ttk.Frame(self.header_frame)
         self.meta_frame.pack(side=tk.LEFT, fill= tk.BOTH, expand=True)
@@ -129,9 +146,11 @@ class AlbumCoverStudioUI:
         self.details_label = tk.Label(self.meta_frame, text="Year * Genre * Label",bg=self.bg_color, font=("Helvetica", 10, "italic"),fg= "gray" , anchor="w")
         self.details_label.pack(fill=tk.X)
 
+        # list container
         self.tracklist_container= ttk.Frame(self.right_frame)
         self.tracklist_container.pack(fill=tk.BOTH, expand=True)
 
+        # tkinter frames cant scroll natively, so we put it inside a canvas to trick it
         self.canvas = tk.Canvas(self.tracklist_container, highlightthickness=0 ,bg=self.bg_color)
         self.scrollbar= ttk.Scrollbar(self.tracklist_container, orient="vertical", command=self.canvas.yview)
 
@@ -165,9 +184,11 @@ class AlbumCoverStudioUI:
         label = album_metadata.get("label", "Independent")
         self.details_label.config(text=f"{year} * {genre} * {label}")
 
+        # we need to clear the old tracks first, otherwise they overlap on the screen
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
+        # loop through tracks and create a row for each
         for index, track in enumerate(tracklist, start=1):
 
             track_row= ttk.Frame(self.scrollable_frame)
@@ -182,6 +203,7 @@ class AlbumCoverStudioUI:
             tk.Label(info_frame, text=track.get("name", "Unknown Track"),bg=self.bg_color ,fg=self.fg_color, font=("Helvetica", 11, "bold"), anchor="w").pack(fill=tk.X)
             tk.Label(info_frame, text=track.get("artist", "Unknown Artist"),bg=self.bg_color, font=("Helvetica", 9, "bold"),fg="gray",  anchor="w").pack(fill=tk.X)
 
+            # lambda is needed here so it passes the correct link when clicked
             track_url= track.get("url", "")
             listen_btn= ttk.Button(track_row, text="Listen", style="Secondary.TButton", command= lambda url=track_url: webbrowser.open(url) if url else None)
             listen_btn.pack(side=tk.RIGHT)
@@ -192,6 +214,7 @@ class AlbumCoverStudioUI:
 
     def update_cover_image(self, photo_image):
 
+            # need to keep a reference to the image or python garbage collector deletes it
         if photo_image:
             self.cover_label.config(image=photo_image, text="")
             self.cover_label.image= photo_image
