@@ -45,10 +45,8 @@ class SystemController:
         self.current_metadata = self.ai_service.generate_album_data(mood, genre, era, track_count)
         time.sleep(2) 
         
-        # 2nd step: Last.fm API
-        self.root.after(0, lambda: self.ui.status_label.config(text="Fetching tracks from Last.fm..."))
         
-       # 3rd step: Image generation
+       # 2rd step: Image generation
         self.root.after(0, lambda: self.ui.status_label.config(text="Generating cover art..."))
         
         try:
@@ -69,6 +67,9 @@ class SystemController:
         
         time.sleep(1)
 
+        # 3nd step: Last.fm API
+        self.root.after(0, lambda: self.ui.status_label.config(text="Fetching tracks from Last.fm..."))
+        
         # Fetching real tracks from Last.fm using tags from Gemini
         tags = self.current_metadata.get("lastfm_tags", [])
         self.current_tracklist = build_tracklist(tags, track_count)
