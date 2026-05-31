@@ -40,7 +40,7 @@ class SystemController:
     def orchestrate_pipeline(self, mood, genre, era, track_count):
         """Main data line where all modules are called(Data Pipe)."""
         
-        # 1st step: Gemini API (Fake waits for now)
+        # 1st step: Gemini API
         self.root.after(0, lambda: self.ui.status_label.config(text="Gemini is thinking..."))
         self.current_metadata = self.ai_service.generate_album_data(mood, genre, era, track_count)
         time.sleep(2) 
