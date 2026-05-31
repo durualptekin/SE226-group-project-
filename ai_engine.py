@@ -1,10 +1,10 @@
-import os #is a library that lets your code talk to your computer's operating system.Its to access the API keys and more, safely without typing them directly into the code
+import os
 import re
 import json
 from google import genai
 #i tried with gemini.generative... but new gemini library wants us to do it this way.to talk to the ai
 
-API_KEY = os.environ.get("GEMINI_API_KEY", "TESTKEY.....")
+API_KEY = os.environ.get("GEMINI_API_KEY", "apikey")
 #pulling
 
 
@@ -23,8 +23,11 @@ class GeminiService:
         Desired Era: {era}
         Number of Tracks: {track_count}
 
-        Create a fictional album based on these details. The album should have a name, an artist, a release year, a label which are fully fictional. It also has a mood description in English, a detailed description of the album cover art (including colors, imagery, and style), and a list of relevant last.fm tags.
-        Only return valid JSON with the following schema, dont add any extra text, only the JSON, and make sure it is valid JSON, if you cant create a album based on the details, return an empty JSON object {{
+        Create a fictional album based on these details. The album should have a name, an artist, a release year, a label which are fully fictional. 
+        It also has a mood description in English, a detailed description of the album cover art (including colors, imagery, and style),
+        and a list of relevant last.fm tags.
+        Only return valid JSON with the following schema, dont add any extra text, only the JSON, and make sure it is valid JSON, 
+        if you cant create a album based on the details, return an empty JSON object {{
           "album_name": "Album name",
           "artist_name": "Artist name",
           "year": 2024,
@@ -45,10 +48,11 @@ class GeminiService:
         # for the answ
         try:
             # actually sending the huge prompt to the ai and waiting for it to reply
-            response = self.client.models.generate_content(model=self.model_name,contents=prompt)  # generate text from the gemini model using the prompt
+            response = self.client.models.generate_content(model=self.model_name, contents=prompt)
             return self.parse_gemini_response(response.text)
 
-        except Exception as e:  # if there is an error during the generation or parsing process, we catch the exception and print it, and return an empty JSON object
+        except Exception as e:  # if there is an error during the generation or parsing process, we catch the exception and print it,
+            # and return an empty JSON object
             print(f"Error generating album data: {e}")  # print the error message
             return self.parse_gemini_response("")
 
@@ -136,7 +140,8 @@ class GeminiService:
             # we return the default_album dictionary instead.
 
         except json.JSONDecodeError as e:
-            # If there is a JSON parsing error, we catch the exception and print an error message indicating that the model did not return valid JSON.
+            # If there is a JSON parsing error, we catch the exception and print an error message indicating
+            # that the model did not return valid JSON.
             print(f"JSON Parsing Error: {e}. Model did not return valid JSON. Using default album.")
             return default_album
 
@@ -144,3 +149,6 @@ class GeminiService:
             print(f"Unexpected error occurred: {e}. Using default album.")
             # If any other unexpected error occurs during the parsing process, we catch the exception,
             return default_album
+
+
+
